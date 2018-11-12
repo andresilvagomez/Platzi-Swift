@@ -1,33 +1,66 @@
 import Foundation
 
+class Transaction {
+    var value: Float
+    var name: String
+    
+    init(value: Float, name: String) {
+        self.value = value
+        self.name = name
+    }
+}
+
+class Debit: Transaction {
+    
+}
+
+class Gain: Transaction {
+    
+}
+
 class Acccount {
-    var amounth: Float = 0 {
+    var amount: Float = 0 {
         willSet {
-            print("Vamos a cambiar el valor", amounth, newValue)
+            print("Vamos a cambiar el valor", amount, newValue)
         }
         didSet {
-            print("Tenemos nuevo valor", amounth)
+            print("Tenemos nuevo valor", amount)
         }
     }
     
     var name: String = ""
-    var transactions: [Float] = []
+    var transactions: [Transaction] = []
     
-    init(amounth: Float, name: String) {
-        self.amounth = amounth
+    init(amount: Float, name: String) {
+        self.amount = amount
         self.name = name
     }
     
     @discardableResult
-    func addTransaction(value: Float) -> Float {
-        if (amounth - value) < 0 {
-            return 0
+    func addTransaction(transaction: Transaction) -> Float {
+        if transaction is Gain {
+            amount += transaction.value
         }
         
-        amounth -= value
-        transactions.append(value)
+        if transaction is Debit {
+            if (amount - transaction.value) < 0 {
+                return 0
+            }
+            
+            amount -= transaction.value
+        }
         
-        return amounth
+        transactions.append(transaction)
+        
+        return amount
+    }
+    
+    func debits() -> [Transaction] {
+        return transactions.filter({ $0 is Debit })
+    }
+    
+    func gains() -> [Transaction] {
+        return transactions.filter({ $0 is Gain })
     }
 }
 
@@ -54,21 +87,27 @@ class Person {
 
 var me = Person(name: "Andres", lastName: "Silva")
 
-let account = Acccount(amounth: 100_000, name: "X bank")
+let account = Acccount(amount: 100_000, name: "X bank")
 
 me.account = account
 
 print(me.account!)
 
-account.addTransaction(value: 20)
-me.account?.addTransaction(value: 20)
+me.account?.addTransaction(
+    transaction: Debit(value: 20, name: "Cafe con amigos")
+)
 
-print(me.account!.amounth)
+me.account?.addTransaction(
+    transaction: Debit(value: 100, name: "Juego PS4")
+)
 
-print(me.fullName)
+me.account?.addTransaction(
+    transaction: Debit(value: 500, name: "PS4")
+)
 
-me.fullName = "Pedro Perez"
+me.account?.addTransaction(
+    transaction: Gain(value: 1000, name: "Salario")
+)
 
-print(me.lastName)
-print(me.name)
+print(me.account!.amount)
 
