@@ -1,5 +1,11 @@
 import Foundation
 
+enum DebitCategories {
+    case health
+    case food, rent, tax, transportation
+    case entertainment
+}
+
 class Transaction {
     var value: Float
     var name: String
@@ -11,7 +17,12 @@ class Transaction {
 }
 
 class Debit: Transaction {
-    
+    var category: DebitCategories
+
+    init(value: Float, name: String, category: DebitCategories) {
+        self.category = category
+        super.init(value: value, name: name)
+    }
 }
 
 class Gain: Transaction {
@@ -62,6 +73,16 @@ class Acccount {
     func gains() -> [Transaction] {
         return transactions.filter({ $0 is Gain })
     }
+    
+    func transactionsFor(category: DebitCategories) -> [Transaction] {
+        return transactions.filter({ (transaction) -> Bool in
+            guard let transaction = transaction as? Debit else {
+                return false
+            }
+            
+            return transaction.category == category
+        })
+    }
 }
 
 class Person {
@@ -94,15 +115,27 @@ me.account = account
 print(me.account!)
 
 me.account?.addTransaction(
-    transaction: Debit(value: 20, name: "Cafe con amigos")
+    transaction: Debit(
+        value: 20,
+        name: "Cafe con amigos",
+        category: DebitCategories.food
+    )
 )
 
 me.account?.addTransaction(
-    transaction: Debit(value: 100, name: "Juego PS4")
+    transaction: Debit(
+        value: 100,
+        name: "Juego PS4",
+        category: .entertainment
+    )
 )
 
 me.account?.addTransaction(
-    transaction: Debit(value: 500, name: "PS4")
+    transaction: Debit(
+        value: 500,
+        name: "PS4",
+        category: .entertainment
+    )
 )
 
 me.account?.addTransaction(
@@ -110,4 +143,11 @@ me.account?.addTransaction(
 )
 
 print(me.account!.amount)
+
+let transactions = me.account?.transactionsFor(category: .entertainment) as? [Debit]
+for transaction in transactions ?? [] {
+    print(transaction.name, transaction.value, transaction.category)
+}
+
+
 
