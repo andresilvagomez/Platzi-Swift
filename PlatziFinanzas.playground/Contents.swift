@@ -99,3 +99,29 @@ case "B":
 default:
     print("Es otro Banco")
 }
+
+var total: Float = 0
+for transaction in transactions {
+    total += (transaction * 100)
+}
+
+print(total)
+
+print(accountTotal)
+
+accountTotal -= total
+
+print(accountTotal)
+
+var total2: Float = 0.0
+for key in transactionsDict.keys {
+    for transaction in transactionsDict[key] ?? [] {
+        total2 += transaction
+    }
+}
+
+print(transactionsDict)
+
+print(total2)
+
+
