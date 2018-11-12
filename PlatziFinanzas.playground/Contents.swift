@@ -58,3 +58,19 @@ var transactionsDict: [String: [Float]] = [
 ]
 
 print(transactionsDict.count)
+
+print(accountTotal)
+
+accountTotal -= 300_000
+
+if accountTotal > 1_000_000 {
+    print("Somos ricos")
+} else if accountTotal > 0 {
+    print("No tenemos tanto dinero")
+} else {
+    print("No tenemos nada!!")
+}
+
+let hasMoney = accountTotal > 1_000_000 ? "Somos ricos" : "No tenemos tanto dinero"
+
+print(hasMoney)
