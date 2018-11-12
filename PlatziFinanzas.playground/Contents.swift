@@ -120,8 +120,40 @@ for key in transactionsDict.keys {
     }
 }
 
+print(transactions)
+
+var total3 = transactions.reduce(0.0) { (result, element) -> Float in
+    return result + element
+}
+
+print(transactions.reduce(0.0, { return $0 + $1 }))
+
+print(transactions.reduce(0.0, { $0 + $1 }))
+
+print(total3)
+
+print(transactions.reduce(0.0, +))
+
 print(transactionsDict)
 print(total2)
+
+var newTransactions = transactions.map { (element) -> Float in
+    return element * 100
+}
+
+print(newTransactions)
+
+print(transactions.sorted(by: >))
+
+print(transactions.filter { (element) -> Bool in
+    return element > 10
+})
+
+transactions.removeAll(where: {
+    $0 > 10
+})
+
+print(transactions)
 
 var nombre: String?
 
@@ -132,6 +164,7 @@ if let nombre = nombre {
 nombre = "Andres"
 
 print(nombre!)
+
 
 
 
