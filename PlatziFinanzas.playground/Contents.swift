@@ -121,7 +121,18 @@ for key in transactionsDict.keys {
 }
 
 print(transactionsDict)
-
 print(total2)
+
+var nombre: String?
+
+if let nombre = nombre {
+    print(nombre)
+}
+
+nombre = "Andres"
+
+print(nombre!)
+
+
 
 
