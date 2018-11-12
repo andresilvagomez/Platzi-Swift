@@ -115,7 +115,7 @@ print(accountTotal)
 
 var total2: Float = 0.0
 for key in transactionsDict.keys {
-    for transaction in transactionsDict[key] ?? [] {
+    for transaction in transactionsDict[key]! where transaction < 20 {
         total2 += transaction
     }
 }
@@ -132,6 +132,8 @@ if let nombre = nombre {
 nombre = "Andres"
 
 print(nombre!)
+
+
 
 
 
