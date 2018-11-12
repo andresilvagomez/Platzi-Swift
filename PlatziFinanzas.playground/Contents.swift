@@ -3,9 +3,17 @@ import Foundation
 protocol Transaction {
     var value: Float { get }
     var name: String { get }
-    var isValid: Bool { get }
-    
-    func invalidateTrantraction()
+    var isValid: Bool { get set }
+}
+
+extension Transaction {
+    mutating func invalidateTrantraction() {
+        isValid = false
+    }
+}
+
+protocol TransactionDebit: Transaction {
+    var category: DebitCategories { get }
 }
 
 enum DebitCategories: Int {
@@ -19,7 +27,7 @@ enum TransactionType {
     case gain(value: Float, name: String)
 }
 
-class Debit: Transaction {
+class Debit: TransactionDebit {
     var value: Float
     var name: String
     var category: DebitCategories
@@ -29,10 +37,6 @@ class Debit: Transaction {
         self.category = category
         self.value = value
         self.name = name
-    }
-    
-    func invalidateTrantraction() {
-        isValid = false
     }
 }
 
@@ -44,10 +48,6 @@ class Gain: Transaction {
     init(value: Float, name: String) {
         self.value = value
         self.name = name
-    }
-    
-    func invalidateTrantraction() {
-        isValid = false
     }
 }
 
@@ -73,11 +73,11 @@ class Acccount {
     }
     
     @discardableResult
-    func addTransaction(transaction: TransactionType) -> Float {
+    func addTransaction(transaction: TransactionType) -> Transaction? {
         switch transaction {
         case .debit(let value, let name, let category):
             if (amount - value) < 0 {
-                return 0
+                return nil
             }
             
             let debit = Debit(value: value, name: name, category: category)
@@ -86,14 +86,14 @@ class Acccount {
             
             transactions.append(debit)
             debits.append(debit)
+            return debit
         case .gain(let value, let name):
             let gain = Gain(value: value, name: name)
             amount += gain.value
             transactions.append(gain)
             gains.append(gain)
+            return gain
         }
-        
-        return amount
     }
     
     func transactionsFor(category: DebitCategories) -> [Transaction] {
@@ -102,7 +102,7 @@ class Acccount {
                 return false
             }
             
-            return transaction.category == category
+            return transaction.isValid && transaction.category == category
         })
     }
 }
@@ -164,6 +164,12 @@ me.account?.addTransaction(
     transaction: .gain(value: 1000, name: "Salario")
 )
 
+var salary = me.account?.addTransaction(
+    transaction: .gain(value: 1000, name: "Salario")
+)
+
+salary?.invalidateTrantraction()
+
 print(me.account!.amount)
 
 let transactions = me.account?.transactionsFor(category: .entertainment) as? [Debit]
@@ -175,5 +181,7 @@ for transaction in transactions ?? [] {
     )
 }
 
-
+for gain in me.account?.gains ?? [] {
+    print(gain.name, gain.isValid, gain.value)
+}
 
