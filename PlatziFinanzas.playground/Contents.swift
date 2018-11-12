@@ -1,14 +1,20 @@
 import Foundation
 
+protocol InvalidateTransaction {
+    func invalidateTrantraction(transaction: Transaction)
+}
+
 protocol Transaction {
     var value: Float { get }
     var name: String { get }
     var isValid: Bool { get set }
+    var delegate: InvalidateTransaction? { get set }
 }
 
 extension Transaction {
     mutating func invalidateTrantraction() {
         isValid = false
+        delegate?.invalidateTrantraction(transaction: self)
     }
 }
 
@@ -28,6 +34,7 @@ enum TransactionType {
 }
 
 class Debit: TransactionDebit {
+    var delegate: InvalidateTransaction?
     var value: Float
     var name: String
     var category: DebitCategories
@@ -41,6 +48,7 @@ class Debit: TransactionDebit {
 }
 
 class Gain: Transaction {
+    var delegate: InvalidateTransaction?
     var value: Float
     var name: String
     var isValid: Bool = true
@@ -81,6 +89,7 @@ class Acccount {
             }
             
             let debit = Debit(value: value, name: name, category: category)
+            debit.delegate = self
             
             amount -= debit.value
             
@@ -89,6 +98,7 @@ class Acccount {
             return debit
         case .gain(let value, let name):
             let gain = Gain(value: value, name: name)
+            gain.delegate = self
             amount += gain.value
             transactions.append(gain)
             gains.append(gain)
@@ -104,6 +114,17 @@ class Acccount {
             
             return transaction.isValid && transaction.category == category
         })
+    }
+}
+
+extension Acccount: InvalidateTransaction {
+    func invalidateTrantraction(transaction: Transaction) {
+        if transaction is Debit {
+            amount += transaction.value
+        }
+        if transaction is Gain {
+            amount -= transaction.value
+        }
     }
 }
 
@@ -184,4 +205,6 @@ for transaction in transactions ?? [] {
 for gain in me.account?.gains ?? [] {
     print(gain.name, gain.isValid, gain.value)
 }
+
+print(me.account?.amount ?? 0)
 
