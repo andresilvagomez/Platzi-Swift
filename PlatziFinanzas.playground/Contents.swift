@@ -9,3 +9,7 @@ let fullName = "\(name) \(lastName)"
 
 print(fullName.capitalized)
 
+accountTotal += 100_000
+
+print(accountTotal)
+
