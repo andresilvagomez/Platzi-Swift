@@ -90,6 +90,26 @@ var b = 2
 
 print(a, b)
 
+@discardableResult
+func addTransaction(
+    transactionValue value: Float?) -> Bool {
+    guard let value = value else {
+        return false
+    }
+    
+    if (accountTotal - value) < 0 {
+        return false
+    }
+    
+    accountTotal -= value
+    transactions.append(value)
+    return true
+}
+
+addTransaction(transactionValue: 30)
+
+addTransaction(transactionValue: nil)
+
 
 
 
