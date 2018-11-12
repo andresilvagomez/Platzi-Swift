@@ -57,117 +57,16 @@ var transactionsDict: [String: [Float]] = [
     "5nov": [10]
 ]
 
-print(transactionsDict.count)
-
-print(accountTotal)
-
-accountTotal -= 300_000
-
-if accountTotal > 1_000_000 {
-    print("Somos ricos")
-} else if accountTotal > 0 {
-    print("No tenemos tanto dinero")
-} else {
-    print("No tenemos nada!!")
-}
-
-let hasMoney = accountTotal > 1_000_000 ? "Somos ricos" : "No tenemos tanto dinero"
-
-print(hasMoney)
-
-var age = 24
-var tax = 1.0
-
-switch age {
-    case 0...17:
-        print("No podemos dar una tarjeta de credito")
-    case 18...22:
-        tax = 2
-        print("La tasa de interes es del 2%")
-    case 23...25:
-        tax = 1.5
-        print("La tasa de interes es del 1.5%")
-    default:
-        print("La tasa de interes es del 1%")
-}
-
-let bankType = "B"
-
-switch bankType {
-case "B":
-    print("Es el Banco B")
-default:
-    print("Es otro Banco")
-}
-
-var total: Float = 0
-for transaction in transactions {
-    total += (transaction * 100)
-}
-
-print(total)
-
-print(accountTotal)
-
-accountTotal -= total
-
-print(accountTotal)
-
-var total2: Float = 0.0
-for key in transactionsDict.keys {
-    for transaction in transactionsDict[key]! where transaction < 20 {
-        total2 += transaction
+func totalAccount() {
+    var total: Float = 0
+    for key in transactionsDict.keys {
+        let array = transactionsDict[key]!
+        total += array.reduce(0.0, +)
     }
+    print(total)
 }
 
-print(transactions)
-
-var total3 = transactions.reduce(0.0) { (result, element) -> Float in
-    return result + element
-}
-
-print(transactions.reduce(0.0, { return $0 + $1 }))
-
-print(transactions.reduce(0.0, { $0 + $1 }))
-
-print(total3)
-
-print(transactions.reduce(0.0, +))
-
-print(transactionsDict)
-print(total2)
-
-var newTransactions = transactions.map { (element) -> Float in
-    return element * 100
-}
-
-print(newTransactions)
-
-print(transactions.sorted(by: >))
-
-print(transactions.filter { (element) -> Bool in
-    return element > 10
-})
-
-transactions.removeAll(where: {
-    $0 > 10
-})
-
-print(transactions)
-
-var nombre: String?
-
-if let nombre = nombre {
-    print(nombre)
-}
-
-nombre = "Andres"
-
-print(nombre!)
-
-
-
-
+totalAccount()
 
 
 
