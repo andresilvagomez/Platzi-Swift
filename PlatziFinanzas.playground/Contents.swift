@@ -1,9 +1,9 @@
 import Foundation
 
-enum DebitCategories {
+enum DebitCategories: Int {
     case health
     case food, rent, tax, transportation
-    case entertainment
+    case entertainment = 10
 }
 
 class Transaction {
@@ -146,7 +146,11 @@ print(me.account!.amount)
 
 let transactions = me.account?.transactionsFor(category: .entertainment) as? [Debit]
 for transaction in transactions ?? [] {
-    print(transaction.name, transaction.value, transaction.category)
+    print(
+        transaction.name,
+        transaction.value,
+        transaction.category.rawValue
+    )
 }
 
 
