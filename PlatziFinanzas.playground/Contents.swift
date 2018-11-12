@@ -38,4 +38,13 @@ print(transactions)
 transactions.min()
 transactions.max()
 
+var dailyTransaction: [[Float]] = [
+    [20, 10, 100.0],
+    [],
+    [1000],
+    [],
+    [10]
+]
 
+dailyTransaction.first
+dailyTransaction[4].isEmpty
