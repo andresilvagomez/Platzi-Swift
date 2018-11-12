@@ -13,3 +13,6 @@ accountTotal += 100_000
 
 print(accountTotal)
 
+var isActive = !fullName.isEmpty
+
+print(isActive)
