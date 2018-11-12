@@ -63,20 +63,32 @@ var transactionsDict2: [String: [Float]] = [
     "4nov": [1000],
 ]
 
-func totalAccount(forTransactions transactions: [String: [Float]]) -> Float {
+func totalAccount(
+    forTransactions transactions: [String: [Float]]) -> (Float, Int) {
     var total: Float = 0
     for key in transactions.keys {
         let array = transactions[key]!
         total += array.reduce(0.0, +)
     }
-    return total
+    return (total, transactions.count)
 }
 
 let total = totalAccount(forTransactions: transactionsDict)
 let total2 = totalAccount(forTransactions: transactionsDict2)
 
-print(total)
+print(total.0, total.1)
 print(total2)
+
+let name2 = (name: "Andres", lastName: "Silva")
+print(name2.name)
+print(name2.lastName)
+
+var a = 1
+var b = 2
+
+(a, b) = (b, a)
+
+print(a, b)
 
 
 
