@@ -1,5 +1,13 @@
 import Foundation
 
+protocol Transaction {
+    var value: Float { get }
+    var name: String { get }
+    var isValid: Bool { get }
+    
+    func invalidateTrantraction()
+}
+
 enum DebitCategories: Int {
     case health
     case food, rent, tax, transportation
@@ -7,31 +15,40 @@ enum DebitCategories: Int {
 }
 
 enum TransactionType {
-    case debit(_ value: Debit)
-    case gain(_ value: Gain)
+    case debit(value: Float, name: String, category: DebitCategories)
+    case gain(value: Float, name: String)
 }
 
-class Transaction {
+class Debit: Transaction {
     var value: Float
     var name: String
+    var category: DebitCategories
+    var isValid: Bool = true
+
+    init(value: Float, name: String, category: DebitCategories) {
+        self.category = category
+        self.value = value
+        self.name = name
+    }
+    
+    func invalidateTrantraction() {
+        isValid = false
+    }
+}
+
+class Gain: Transaction {
+    var value: Float
+    var name: String
+    var isValid: Bool = true
     
     init(value: Float, name: String) {
         self.value = value
         self.name = name
     }
-}
-
-class Debit: Transaction {
-    var category: DebitCategories
-
-    init(value: Float, name: String, category: DebitCategories) {
-        self.category = category
-        super.init(value: value, name: name)
-    }
-}
-
-class Gain: Transaction {
     
+    func invalidateTrantraction() {
+        isValid = false
+    }
 }
 
 class Acccount {
@@ -58,15 +75,19 @@ class Acccount {
     @discardableResult
     func addTransaction(transaction: TransactionType) -> Float {
         switch transaction {
-        case .debit(let debit):
-            if (amount - debit.value) < 0 {
+        case .debit(let value, let name, let category):
+            if (amount - value) < 0 {
                 return 0
             }
             
+            let debit = Debit(value: value, name: name, category: category)
+            
             amount -= debit.value
+            
             transactions.append(debit)
             debits.append(debit)
-        case .gain(let gain):
+        case .gain(let value, let name):
+            let gain = Gain(value: value, name: name)
             amount += gain.value
             transactions.append(gain)
             gains.append(gain)
@@ -116,31 +137,31 @@ me.account = account
 print(me.account!)
 
 me.account?.addTransaction(
-    transaction: .debit(Debit(
+    transaction: .debit(
         value: 20,
         name: "Cafe con amigos",
         category: DebitCategories.food
-    ))
+    )
 )
 
 me.account?.addTransaction(
-    transaction: .debit(Debit(
+    transaction: .debit(
         value: 100,
         name: "Juego PS4",
         category: .entertainment
-    ))
+    )
 )
 
 me.account?.addTransaction(
-    transaction: .debit(Debit(
+    transaction: .debit(
         value: 500,
         name: "PS4",
         category: .entertainment
-    ))
+    )
 )
 
 me.account?.addTransaction(
-    transaction: .gain(Gain(value: 1000, name: "Salario"))
+    transaction: .gain(value: 1000, name: "Salario")
 )
 
 print(me.account!.amount)
