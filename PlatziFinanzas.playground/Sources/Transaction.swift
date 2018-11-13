@@ -16,3 +16,12 @@ public protocol Transaction {
     var completed: Bool { get }
     var confirmation: Date? { get set }
 }
+
+public extension Transaction {
+    public mutating func invalidateTrantraction() {
+        if completed {
+            isValid = false
+            delegate?.invalidateTrantraction(transaction: self)
+        }
+    }
+}
