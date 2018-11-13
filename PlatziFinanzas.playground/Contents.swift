@@ -5,34 +5,6 @@ enum AccountExceptions: Error {
     case amountExeded
 }
 
-extension Date {
-    init(year: Int, month: Int, day: Int) {
-        let calendar = Calendar(identifier: .gregorian)
-        var dateComponents = DateComponents()
-        dateComponents.year = year
-        dateComponents.month = month
-        dateComponents.day = day
-        self = calendar.date(from: dateComponents) ?? Date()
-    }
-}
-
-protocol InvalidateTransaction {
-    func invalidateTrantraction(transaction: Transaction)
-}
-
-typealias TransactionHandler = ( (_ completed: Bool, _ confirmation: Date) -> Void )
-
-protocol Transaction {
-    var value: Float { get }
-    var name: String { get }
-    var isValid: Bool { get set }
-    var delegate: InvalidateTransaction? { get set }
-    var date: Date { get }
-    var handler: TransactionHandler? { get set }
-    var completed: Bool { get }
-    var confirmation: Date? { get set }
-}
-
 extension Transaction {
     mutating func invalidateTrantraction() {
         if completed {
@@ -42,43 +14,9 @@ extension Transaction {
     }
 }
 
-protocol TransactionDebit: Transaction {
-    var category: DebitCategories { get }
-}
-
-enum DebitCategories: Int {
-    case health
-    case food, rent, tax, transportation
-    case entertainment = 10
-}
-
 enum TransactionType {
     case debit(value: Float, name: String, category: DebitCategories, date: Date)
     case gain(value: Float, name: String, date: Date)
-}
-
-class Debit: TransactionDebit {
-    var confirmation: Date?
-    var date: Date
-    var delegate: InvalidateTransaction?
-    var value: Float
-    var name: String
-    var category: DebitCategories
-    var isValid: Bool = true
-    var handler: TransactionHandler?
-    var completed: Bool = false
-
-    init(value: Float, name: String, category: DebitCategories, date: Date) {
-        self.category = category
-        self.value = value
-        self.name = name
-        self.date = date
-        
-        DispatchQueue.main.asyncAfter(deadline: .now()) {
-            self.handler?(true, Date())
-            print("Confirmed transaction", Date())
-        }
-    }
 }
 
 class Gain: Transaction {
