@@ -1,5 +1,16 @@
 import Foundation
 
+extension Date {
+    init(year: Int, month: Int, day: Int) {
+        let calendar = Calendar(identifier: .gregorian)
+        var dateComponents = DateComponents()
+        dateComponents.year = year
+        dateComponents.month = month
+        dateComponents.day = day
+        self = calendar.date(from: dateComponents) ?? Date()
+    }
+}
+
 protocol InvalidateTransaction {
     func invalidateTrantraction(transaction: Transaction)
 }
@@ -9,6 +20,7 @@ protocol Transaction {
     var name: String { get }
     var isValid: Bool { get set }
     var delegate: InvalidateTransaction? { get set }
+    var date: Date { get }
 }
 
 extension Transaction {
@@ -29,33 +41,37 @@ enum DebitCategories: Int {
 }
 
 enum TransactionType {
-    case debit(value: Float, name: String, category: DebitCategories)
-    case gain(value: Float, name: String)
+    case debit(value: Float, name: String, category: DebitCategories, date: Date)
+    case gain(value: Float, name: String, date: Date)
 }
 
 class Debit: TransactionDebit {
+    var date: Date
     var delegate: InvalidateTransaction?
     var value: Float
     var name: String
     var category: DebitCategories
     var isValid: Bool = true
 
-    init(value: Float, name: String, category: DebitCategories) {
+    init(value: Float, name: String, category: DebitCategories, date: Date) {
         self.category = category
         self.value = value
         self.name = name
+        self.date = date
     }
 }
 
 class Gain: Transaction {
+    var date: Date
     var delegate: InvalidateTransaction?
     var value: Float
     var name: String
     var isValid: Bool = true
     
-    init(value: Float, name: String) {
+    init(value: Float, name: String, date: Date) {
         self.value = value
         self.name = name
+        self.date = date
     }
 }
 
@@ -83,12 +99,12 @@ class Acccount {
     @discardableResult
     func addTransaction(transaction: TransactionType) -> Transaction? {
         switch transaction {
-        case .debit(let value, let name, let category):
+        case .debit(let value, let name, let category, let date):
             if (amount - value) < 0 {
                 return nil
             }
             
-            let debit = Debit(value: value, name: name, category: category)
+            let debit = Debit(value: value, name: name, category: category, date: date)
             debit.delegate = self
             
             amount -= debit.value
@@ -96,8 +112,8 @@ class Acccount {
             transactions.append(debit)
             debits.append(debit)
             return debit
-        case .gain(let value, let name):
-            let gain = Gain(value: value, name: name)
+        case .gain(let value, let name, let date):
+            let gain = Gain(value: value, name: name, date: date)
             gain.delegate = self
             amount += gain.value
             transactions.append(gain)
@@ -161,7 +177,8 @@ me.account?.addTransaction(
     transaction: .debit(
         value: 20,
         name: "Cafe con amigos",
-        category: DebitCategories.food
+        category: DebitCategories.food,
+        date: Date(year: 2018, month: 11, day: 14)
     )
 )
 
@@ -169,7 +186,8 @@ me.account?.addTransaction(
     transaction: .debit(
         value: 100,
         name: "Juego PS4",
-        category: .entertainment
+        category: .entertainment,
+        date: Date(year: 2018, month: 11, day: 10)
     )
 )
 
@@ -177,16 +195,25 @@ me.account?.addTransaction(
     transaction: .debit(
         value: 500,
         name: "PS4",
-        category: .entertainment
+        category: .entertainment,
+        date: Date(year: 2018, month: 11, day: 10)
     )
 )
 
 me.account?.addTransaction(
-    transaction: .gain(value: 1000, name: "Salario")
+    transaction: .gain(
+        value: 1000,
+        name: "Salario",
+        date: Date(year: 2018, month: 11, day: 1)
+    )
 )
 
 var salary = me.account?.addTransaction(
-    transaction: .gain(value: 1000, name: "Salario")
+    transaction: .gain(
+        value: 1000,
+        name: "Salario",
+        date: Date(year: 2018, month: 11, day: 1)
+    )
 )
 
 salary?.invalidateTrantraction()
@@ -198,12 +225,18 @@ for transaction in transactions ?? [] {
     print(
         transaction.name,
         transaction.value,
-        transaction.category.rawValue
+        transaction.category.rawValue,
+        transaction.date
     )
 }
 
 for gain in me.account?.gains ?? [] {
-    print(gain.name, gain.isValid, gain.value)
+    print(
+        gain.name,
+        gain.isValid,
+        gain.value,
+        gain.date
+    )
 }
 
 print(me.account?.amount ?? 0)
