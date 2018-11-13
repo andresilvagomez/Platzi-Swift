@@ -15,14 +15,17 @@ protocol InvalidateTransaction {
     func invalidateTrantraction(transaction: Transaction)
 }
 
+typealias TransactionHandler = ( (_ completed: Bool, _ confirmation: Date) -> Void )
+
 protocol Transaction {
     var value: Float { get }
     var name: String { get }
     var isValid: Bool { get set }
     var delegate: InvalidateTransaction? { get set }
     var date: Date { get }
-    var handler: ( (_ completed: Bool) -> Void )? { get set }
+    var handler: TransactionHandler? { get set }
     var completed: Bool { get }
+    var confirmation: Date? { get set }
 }
 
 extension Transaction {
@@ -50,13 +53,14 @@ enum TransactionType {
 }
 
 class Debit: TransactionDebit {
+    var confirmation: Date?
     var date: Date
     var delegate: InvalidateTransaction?
     var value: Float
     var name: String
     var category: DebitCategories
     var isValid: Bool = true
-    var handler: ( (_ completed: Bool) -> Void )?
+    var handler: TransactionHandler?
     var completed: Bool = false
 
     init(value: Float, name: String, category: DebitCategories, date: Date) {
@@ -64,16 +68,22 @@ class Debit: TransactionDebit {
         self.value = value
         self.name = name
         self.date = date
+        
+        DispatchQueue.main.asyncAfter(deadline: .now()) {
+            self.handler?(true, Date())
+            print("Confirmed transaction", Date())
+        }
     }
 }
 
 class Gain: Transaction {
+    var confirmation: Date?
     var date: Date
     var delegate: InvalidateTransaction?
     var value: Float
     var name: String
     var isValid: Bool = true
-    var handler: ( (_ completed: Bool) -> Void )?
+    var handler: TransactionHandler?
     var completed: Bool = false
     
     init(value: Float, name: String, date: Date) {
@@ -82,7 +92,8 @@ class Gain: Transaction {
         self.date = date
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            self.handler?(true)
+            self.handler?(true, Date())
+            print("Confirmed transaction", Date())
         }
     }
 }
@@ -119,7 +130,8 @@ class Acccount {
             let debit = Debit(value: value, name: name, category: category, date: date)
             debit.delegate = self
             
-            debit.handler = { (completed) in
+            debit.handler = { (completed, confirmation) in
+                debit.confirmation = confirmation
                 self.amount -= debit.value
                 self.transactions.append(debit)
                 self.debits.append(debit)
@@ -129,7 +141,8 @@ class Acccount {
         case .gain(let value, let name, let date):
             let gain = Gain(value: value, name: name, date: date)
             gain.delegate = self
-            gain.handler = { (completed) in
+            gain.handler = { (completed, confirmation) in
+                gain.confirmation = confirmation
                 self.amount += gain.value
                 self.transactions.append(gain)
                 self.gains.append(gain)
@@ -239,24 +252,29 @@ DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
 
 print(me.account!.amount)
 
-let transactions = me.account?.transactionsFor(category: .entertainment) as? [Debit]
-for transaction in transactions ?? [] {
-    print(
-        transaction.name,
-        transaction.value,
-        transaction.category.rawValue,
-        transaction.date
-    )
+DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+    let transactions = me.account?.transactionsFor(category: .entertainment) as? [Debit]
+    for transaction in transactions ?? [] {
+        print(
+            "Hello",
+            transaction.name,
+            transaction.value,
+            transaction.category.rawValue,
+            transaction.date
+        )
+    }
+    
+    for gain in me.account?.gains ?? [] {
+        print(
+            "Hello gain",
+            gain.name,
+            gain.isValid,
+            gain.value,
+            gain.date
+        )
+    }
 }
 
-for gain in me.account?.gains ?? [] {
-    print(
-        gain.name,
-        gain.isValid,
-        gain.value,
-        gain.date
-    )
-}
 
 print(me.account?.amount ?? 0)
 
