@@ -21,12 +21,16 @@ protocol Transaction {
     var isValid: Bool { get set }
     var delegate: InvalidateTransaction? { get set }
     var date: Date { get }
+    var handler: ( (_ completed: Bool) -> Void )? { get set }
+    var completed: Bool { get }
 }
 
 extension Transaction {
     mutating func invalidateTrantraction() {
-        isValid = false
-        delegate?.invalidateTrantraction(transaction: self)
+        if completed {
+            isValid = false
+            delegate?.invalidateTrantraction(transaction: self)
+        }
     }
 }
 
@@ -52,6 +56,8 @@ class Debit: TransactionDebit {
     var name: String
     var category: DebitCategories
     var isValid: Bool = true
+    var handler: ( (_ completed: Bool) -> Void )?
+    var completed: Bool = false
 
     init(value: Float, name: String, category: DebitCategories, date: Date) {
         self.category = category
@@ -67,11 +73,17 @@ class Gain: Transaction {
     var value: Float
     var name: String
     var isValid: Bool = true
+    var handler: ( (_ completed: Bool) -> Void )?
+    var completed: Bool = false
     
     init(value: Float, name: String, date: Date) {
         self.value = value
         self.name = name
         self.date = date
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            self.handler?(true)
+        }
     }
 }
 
@@ -107,17 +119,21 @@ class Acccount {
             let debit = Debit(value: value, name: name, category: category, date: date)
             debit.delegate = self
             
-            amount -= debit.value
+            debit.handler = { (completed) in
+                self.amount -= debit.value
+                self.transactions.append(debit)
+                self.debits.append(debit)
+            }
             
-            transactions.append(debit)
-            debits.append(debit)
             return debit
         case .gain(let value, let name, let date):
             let gain = Gain(value: value, name: name, date: date)
             gain.delegate = self
-            amount += gain.value
-            transactions.append(gain)
-            gains.append(gain)
+            gain.handler = { (completed) in
+                self.amount += gain.value
+                self.transactions.append(gain)
+                self.gains.append(gain)
+            }
             return gain
         }
     }
@@ -216,7 +232,10 @@ var salary = me.account?.addTransaction(
     )
 )
 
-salary?.invalidateTrantraction()
+DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+    salary?.invalidateTrantraction()
+    print("Invalidated")
+}
 
 print(me.account!.amount)
 
